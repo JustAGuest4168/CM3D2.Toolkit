@@ -29,16 +29,17 @@ namespace CM3D2.MultiArc.Example
 
         static void SampleAnm()
         {
+            string[] dirs1 = new string[] { @"C:\KISS\CM3D2\GameData" };
+            string[] dirs2 = new string[] { @"C:\KISS\COM3D2\GameData_20" };
+            string[] dirs3 = new string[] { @"C:\KISS\COM3D2\GameData" };
+            string[] dirs4 = new string[] { @"C:\KISS\COM3D2\Mod"};
+
             //Time
             Stopwatch stopWatch = Stopwatch.StartNew();
 
             //Load Arcs
             List<List<string>> data = new List<List<string>>();
-            MultiArcLoader sal = new MultiArcLoader(new string[] { @"C:\KISS\CM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData_20",
-                                                                   //@"C:\KISS\COM3D2\Mod\[Warps]"
-                                                                 }, 5, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG, new ConsoleLogger());
+            MultiArcLoader sal = new MultiArcLoader(dirs1, dirs2, dirs3, dirs4, 5, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG, new ConsoleLogger());
             sal.LoadArcs();
 
             //Get only the anm files
@@ -71,13 +72,14 @@ namespace CM3D2.MultiArc.Example
 
         static void ScriptDump()
         {
+            string[] dirs1 = new string[] { @"C:\KISS\CM3D2\GameData" };
+            string[] dirs2 = new string[] { @"C:\KISS\COM3D2\GameData_20" };
+            string[] dirs3 = new string[] { @"C:\KISS\COM3D2\GameData" };
+            string[] dirs4 = new string[] { @"C:\KISS\COM3D2\Mod" };
+
             Stopwatch stopWatch = Stopwatch.StartNew();
 
-            MultiArcLoader sal = new MultiArcLoader(new string[] { //@"C:\KISS\CM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData_20",
-                                                                   //@"C:\KISS\COM3D2\Mod\[Warps]"
-                                                                 }, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV | 
+            MultiArcLoader sal = new MultiArcLoader(null, dirs2, dirs3, null, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV | 
                                                                                                                       MultiArcLoader.Exclude.Motion | MultiArcLoader.Exclude.Parts | MultiArcLoader.Exclude.PriorityMaterial | 
                                                                                                                       MultiArcLoader.Exclude.Sound | MultiArcLoader.Exclude.System | MultiArcLoader.Exclude.Voice);
             sal.LoadArcs();
@@ -135,11 +137,12 @@ namespace CM3D2.MultiArc.Example
 
         static void ScriptPattern()
         {
-            MultiArcLoader sal = new MultiArcLoader(new string[] { //@"C:\KISS\CM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData_20",
-                                                                   //@"C:\KISS\COM3D2\Mod\[Warps]"
-                                                                 }, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV |
+            string[] dirs1 = new string[] { @"C:\KISS\CM3D2\GameData" };
+            string[] dirs2 = new string[] { @"C:\KISS\COM3D2\GameData_20" };
+            string[] dirs3 = new string[] { @"C:\KISS\COM3D2\GameData" };
+            string[] dirs4 = new string[] { @"C:\KISS\COM3D2\Mod" };
+
+            MultiArcLoader sal = new MultiArcLoader(null, dirs2, dirs3, null, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV |
                                                                                                                       MultiArcLoader.Exclude.Motion | MultiArcLoader.Exclude.Parts | MultiArcLoader.Exclude.PriorityMaterial |
                                                                                                                       MultiArcLoader.Exclude.Sound | MultiArcLoader.Exclude.System | MultiArcLoader.Exclude.Voice);
             sal.LoadArcs();
@@ -211,14 +214,15 @@ namespace CM3D2.MultiArc.Example
 
         static void ScriptPatternBetter(ScriptTag tag)
         {
+            string[] dirs1 = new string[] { @"C:\KISS\CM3D2\GameData" };
+            string[] dirs2 = new string[] { @"C:\KISS\COM3D2\GameData_20" };
+            string[] dirs3 = new string[] { @"C:\KISS\COM3D2\GameData" };
+            string[] dirs4 = new string[] { @"C:\KISS\COM3D2\Mod" };
+
             Stopwatch stopwatch;
             stopwatch = Stopwatch.StartNew();
             Console.WriteLine("START: Building Arcs...");
-            MultiArcLoader sal = new MultiArcLoader(new string[] { //@"C:\KISS\CM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData_20",
-                                                                   //@"C:\KISS\COM3D2\Mod\[Warps]"
-                                                                 }, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV |
+            MultiArcLoader sal = new MultiArcLoader(null, dirs2, dirs3, null, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV |
                                                                                                                       MultiArcLoader.Exclude.Motion | MultiArcLoader.Exclude.Parts | MultiArcLoader.Exclude.PriorityMaterial |
                                                                                                                       MultiArcLoader.Exclude.Sound | MultiArcLoader.Exclude.System | MultiArcLoader.Exclude.Voice);
             sal.LoadArcs();
@@ -374,14 +378,15 @@ namespace CM3D2.MultiArc.Example
 
         static void ScriptMotionScriptAnalysis()
         {
+            string[] dirs1 = new string[] { @"C:\KISS\CM3D2\GameData" };
+            string[] dirs2 = new string[] { @"C:\KISS\COM3D2\GameData_20" };
+            string[] dirs3 = new string[] { @"C:\KISS\COM3D2\GameData" };
+            string[] dirs4 = new string[] { @"C:\KISS\COM3D2\Mod" };
+
             Stopwatch stopwatch;
             stopwatch = Stopwatch.StartNew();
             Console.WriteLine("START: Building Arcs...");
-            MultiArcLoader sal = new MultiArcLoader(new string[] { //@"C:\KISS\CM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData_20",
-                                                                   //@"C:\KISS\COM3D2\Mod\[Warps]"
-                                                                 }, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV |
+            MultiArcLoader sal = new MultiArcLoader(null, dirs2, dirs3, null, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV |
                                                                                                                       MultiArcLoader.Exclude.Motion | MultiArcLoader.Exclude.Parts | MultiArcLoader.Exclude.PriorityMaterial |
                                                                                                                       MultiArcLoader.Exclude.Sound | MultiArcLoader.Exclude.System | MultiArcLoader.Exclude.Voice);
             sal.LoadArcs();
@@ -443,14 +448,15 @@ namespace CM3D2.MultiArc.Example
 
         static void ScriptMotionScriptAnalysis2()
         {
+            string[] dirs1 = new string[] { @"C:\KISS\CM3D2\GameData" };
+            string[] dirs2 = new string[] { @"C:\KISS\COM3D2\GameData_20" };
+            string[] dirs3 = new string[] { @"C:\KISS\COM3D2\GameData" };
+            string[] dirs4 = new string[] { @"C:\KISS\COM3D2\Mod" };
+
             Stopwatch stopwatch;
             stopwatch = Stopwatch.StartNew();
             Console.WriteLine("START: Building Arcs...");
-            MultiArcLoader sal = new MultiArcLoader(new string[] { @"C:\KISS\CM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData_20",
-                                                                   //@"C:\KISS\COM3D2\Mod\[Warps]"
-                                                                 }, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV |
+            MultiArcLoader sal = new MultiArcLoader(dirs1, dirs2, dirs3, null, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV |
                                                                                                                       MultiArcLoader.Exclude.Motion | MultiArcLoader.Exclude.Parts | MultiArcLoader.Exclude.PriorityMaterial |
                                                                                                                       MultiArcLoader.Exclude.Sound | MultiArcLoader.Exclude.System | MultiArcLoader.Exclude.Voice);
             sal.LoadArcs();
@@ -498,14 +504,15 @@ namespace CM3D2.MultiArc.Example
         #region
         static void ScriptCompleteAnalysis()
         {
+            string[] dirs1 = new string[] { @"C:\KISS\CM3D2\GameData" };
+            string[] dirs2 = new string[] { @"C:\KISS\COM3D2\GameData_20" };
+            string[] dirs3 = new string[] { @"C:\KISS\COM3D2\GameData" };
+            string[] dirs4 = new string[] { @"C:\KISS\COM3D2\Mod" };
+
             Stopwatch stopwatch;
             stopwatch = Stopwatch.StartNew();
             Console.WriteLine("START: Building Arcs...");
-            MultiArcLoader mal = new MultiArcLoader(new string[] { @"C:\KISS\CM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData",
-                                                                   @"C:\KISS\COM3D2\GameData_20",
-                                                                   //@"C:\KISS\COM3D2\Mod\[Warps]"
-                                                                 }, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV |
+            MultiArcLoader mal = new MultiArcLoader(dirs1, dirs2, dirs3, null, 3, MultiArcLoader.LoadMethod.Single, false, null, true, MultiArcLoader.Exclude.None | MultiArcLoader.Exclude.BG | MultiArcLoader.Exclude.CSV |
                                                                                                                       MultiArcLoader.Exclude.Motion | MultiArcLoader.Exclude.Parts | MultiArcLoader.Exclude.PriorityMaterial |
                                                                                                                       MultiArcLoader.Exclude.Sound | MultiArcLoader.Exclude.System | MultiArcLoader.Exclude.Voice);
             mal.LoadArcs();
@@ -778,8 +785,12 @@ namespace CM3D2.MultiArc.Example
             Console.WriteLine("START: Building Arcs build Cache...");
             stopwatch = Stopwatch.StartNew();
 
-            string[] dirs = new string[] { @"C:\KISS\CM3D2\GameData", @"C:\KISS\COM3D2\GameData", @"C:\KISS\COM3D2\GameData_20", @"C:\KISS\COM3D2\Mod" };
-            MultiArcLoader mal = new MultiArcLoader(dirs, 3, MultiArcLoader.LoadMethod.Single, true, @"C:\Users\MC\source\repos\CM3D2.Toolkit\CM3D2.Toolkit\cachetest.json", false, MultiArcLoader.Exclude.None, new ConsoleLogger());
+            string[] dirs1 = new string[] { @"C:\KISS\CM3D2\GameData" };
+            string[] dirs2 = new string[] { @"C:\KISS\COM3D2\GameData_20" };
+            string[] dirs3 = new string[] { @"C:\KISS\COM3D2\GameData" };
+            string[] dirs4 = new string[] { @"C:\KISS\COM3D2\Mod" };
+
+            MultiArcLoader mal = new MultiArcLoader(dirs1, dirs2, dirs3, dirs4, 3, MultiArcLoader.LoadMethod.Single, true, @"C:\Users\MC\source\repos\CM3D2.Toolkit\CM3D2.Toolkit\cachetest.json", false, MultiArcLoader.Exclude.None, new ConsoleLogger());
             mal.LoadArcs();
             stopwatch.Stop();
             Console.WriteLine("DONE: Building Arcs build Cache..." + stopwatch.Elapsed.ToString());
@@ -792,7 +803,7 @@ namespace CM3D2.MultiArc.Example
 
             Console.WriteLine("START: Building Arcs don't build Cache...");
             stopwatch = Stopwatch.StartNew();
-            mal = new MultiArcLoader(dirs, 3, MultiArcLoader.LoadMethod.Single, false, null, false, MultiArcLoader.Exclude.None);
+            mal = new MultiArcLoader(dirs1, dirs2, dirs3, dirs4, 3, MultiArcLoader.LoadMethod.Single, false, null, false, MultiArcLoader.Exclude.None);
             mal.LoadArcs();
             stopwatch.Stop();
             Console.WriteLine("DONE: Building Arcs don't build Cache..." + stopwatch.Elapsed.ToString());
