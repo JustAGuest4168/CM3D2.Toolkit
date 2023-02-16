@@ -9,10 +9,13 @@ using System.Threading.Tasks;
 
 namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
 {
-    public class MultiArcLoader
+    public class MultiArcLoader : IDisposable
     {
-        //Constructor
-        string[] directories;
+        //Instance Properties
+        string[] directoriesCM { get; set; }
+        string[] directoriesCOM20 { get; set; }
+        string[] directoriesCOM { get; set; }
+        string[] directoriesCOMMods { get; set; }
         int threadCount;
         Exclude exclusions;
         bool hierarchyOnly;
@@ -21,68 +24,80 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
         LoadMethod loadMethod;
         ILogger log;
 
-        //Instance
+        //Thread Properties
         List<List<string>> arcFilePathsDivided;
         List<ArcFileSystem> arcFilePathsDividedArcs;
         public ArcFileSystem arc;
         public List<string> arcFilePaths { get; set; }
 
-        public MultiArcLoader(string[] dirs, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool keepDuplicates = false, Exclude exclude = Exclude.None, ILogger logger = null) : this(dirs, threads, loadingMethod, false, null, keepDuplicates, exclude, logger)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="cmGameData"></param>
+        /// <param name="comGameData20"></param>
+        /// <param name="comGameData"></param>
+        /// <param name="comMods"></param>
+        /// <param name="threads"></param>
+        /// <param name="loadingMethod"></param>
+        /// <param name="hierarchyOnlyFromCache"></param>
+        /// <param name="hierachyCachePath"></param>
+        /// <param name="keepDuplicates"></param>
+        /// <param name="exclude"></param>
+        /// <param name="logger"></param>
+        public MultiArcLoader(string[] cmGameData, string[] comGameData20, string[] comGameData, string[] comMods, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool hierarchyOnlyFromCache = false, string hierachyCachePath = null, bool keepDuplicates = false, Exclude exclude = Exclude.None, ILogger logger = null)
         {
-        }
-
-        public MultiArcLoader(string[] dirs, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool hierarchyOnlyFromCache = false, bool keepDuplicates = false, Exclude exclude = Exclude.None) : this(dirs, threads, loadingMethod, hierarchyOnlyFromCache, null, keepDuplicates, exclude, null)
-        {
-        }
-        public MultiArcLoader(string[] dirs, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool hierarchyOnlyFromCache = false, bool keepDuplicates = false, Exclude exclude = Exclude.None, ILogger logger = null) : this(dirs, threads, loadingMethod, hierarchyOnlyFromCache, null, keepDuplicates, exclude, logger)
-        {
-        }
-
-        public MultiArcLoader(string[] dirs, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool hierarchyOnlyFromCache = false, string hierachyCachePath = null, bool keepDuplicates = false, Exclude exclude = Exclude.None, ILogger logger = null)
-        {
-            directories = dirs;
+            directoriesCM = cmGameData;
+            directoriesCOM20 = comGameData20;
+            directoriesCOM = comGameData;
+            directoriesCOMMods = comMods;
             threadCount = Math.Max(1, threads);
-            exclusions = exclude;
+            loadMethod = loadingMethod;
             hierarchyOnly = hierarchyOnlyFromCache;
             hierarchyPath = hierachyCachePath;
             keepDupes = keepDuplicates;
-            loadMethod = loadingMethod;
+            exclusions = exclude;
             log = logger;
 
-            if(log == null)
+            if (log == null)
             {
                 log = NullLogger.Instance;
             }
         }
 
+        #region Additional Constructors
+        public MultiArcLoader(string[] cmGameData, string[] comGameData20, string[] comGameData, string[] comMods, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool keepDuplicates = false, Exclude exclude = Exclude.None, ILogger logger = null) : this(cmGameData, comGameData20, comGameData, comMods, threads, loadingMethod, false, null, keepDuplicates, exclude, logger)
+        {
+        }
+
+        public MultiArcLoader(string[] cmGameData, string[] comGameData20, string[] comGameData, string[] comMods, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool hierarchyOnlyFromCache = false, bool keepDuplicates = false, Exclude exclude = Exclude.None) : this(cmGameData, comGameData20, comGameData, comMods, threads, loadingMethod, hierarchyOnlyFromCache, null, keepDuplicates, exclude, null)
+        {
+        }
+        public MultiArcLoader(string[] cmGameData, string[] comGameData20, string[] comGameData, string[] comMods, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool hierarchyOnlyFromCache = false, bool keepDuplicates = false, Exclude exclude = Exclude.None, ILogger logger = null) : this(cmGameData, comGameData20, comGameData, comMods, threads, loadingMethod, hierarchyOnlyFromCache, null, keepDuplicates, exclude, logger)
+        {
+        }
+        #endregion
+
+
         public void LoadArcs()
         {
             //Combine all file paths
             arcFilePaths = new List<string>();
-            foreach (string dir in directories)
+            if (directoriesCM != null)
             {
-                if (dir.EndsWith(".arc"))
-                {
-                    string fileName = Path.GetFileName(dir);
-                    if (includeArc(fileName))
-                    {
-                        arcFilePaths.Add(dir);
-                    }
-                }
-                else
-                {
-                    string[] files = Directory.GetFiles(dir, "*.arc", SearchOption.AllDirectories);
-                    foreach (string file in files)
-                    {
-                        string fileName = Path.GetFileName(file);
-                        if (includeArc(fileName))
-                        {
-                            arcFilePaths.Add(file);
-                        }
-                    }
-                }
+                arcFilePaths.AddRange(fetchSortedArcs(directoriesCM, exclusions, log));
             }
-            arcFilePaths.Sort();
+            if (directoriesCOM20 != null)
+            {
+                arcFilePaths.AddRange(fetchSortedArcs(directoriesCOM20, exclusions, log));
+            }
+            if (directoriesCOM != null)
+            {
+                arcFilePaths.AddRange(fetchSortedArcs(directoriesCOM, exclusions, log));
+            }
+            if (directoriesCOMMods != null)
+            {
+                arcFilePaths.AddRange(fetchSortedArcs(directoriesCOMMods, exclusions, log));
+            }
 
             //Build from cache if possible
             if (hierarchyOnly && hierarchyPath != null)
@@ -229,7 +244,40 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
             }
         }
 
-        private bool includeArc(string arcFileName)
+        private static List<string> fetchSortedArcs(string[] dirs, Exclude exclusions, ILogger log)
+        {
+            List<string> list = new List<string>();
+
+            foreach (string dir in dirs)
+            {
+                //Passed arc directly
+                if (dir.EndsWith(".arc"))
+                {
+                    string fileName = Path.GetFileName(dir);
+                    if (includeArc(fileName, exclusions, log))
+                    {
+                        list.Add(dir);
+                    }
+                }
+                //Passed directory
+                else
+                {
+                    string[] files = Directory.GetFiles(dir, "*.arc", SearchOption.AllDirectories);
+                    foreach (string file in files)
+                    {
+                        string fileName = Path.GetFileName(file);
+                        if (includeArc(fileName, exclusions, log))
+                        {
+                            list.Add(file);
+                        }
+                    }
+                }
+            }
+            list.Sort();
+
+            return list;
+        }
+        private static bool includeArc(string arcFileName, Exclude exclusions, ILogger log)
         {
             arcFileName = arcFileName.ToLower().Trim();
 
@@ -466,6 +514,45 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
             }
 
             return arcH;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+
+            GC.SuppressFinalize(this);
+        }
+
+        private bool disposed = false;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposed)
+            {
+                if (disposing)
+                {
+                    if (arc != null)
+                    {
+                        _dispose(arc.Root);
+                    }
+                }
+                this.disposed = true;
+            }
+        }
+        protected static void _dispose(ArcDirectoryEntry dir)
+        {
+            //Dispose Files
+            foreach (ArcFileEntry file in dir.Files.Values)
+            {
+                file.Pointer.Dispose();
+            }
+            dir.Files.Clear();
+
+            //Dispose Files in Directories
+            foreach (ArcDirectoryEntry dir2 in dir.Directories.Values)
+            {
+                _dispose(dir2);
+            }
+            dir.Directories.Clear();
         }
     }
 }
