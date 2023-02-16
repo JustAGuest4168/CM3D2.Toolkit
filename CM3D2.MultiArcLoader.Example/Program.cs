@@ -34,7 +34,7 @@ namespace CM3D2.MultiArc.Example
 
             //Load Arcs
             List<List<string>> data = new List<List<string>>();
-            MultiArcLoader sal = new MultiArcLoader(new string[] { @"C:\KISS\CM3D2\GameData",
+            MultiArcLoader sal = new MultiArcLoader(null, null, null, new string[] { @"C:\KISS\CM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData_20",
                                                                    //@"C:\KISS\COM3D2\Mod\[Warps]"
@@ -73,7 +73,7 @@ namespace CM3D2.MultiArc.Example
         {
             Stopwatch stopWatch = Stopwatch.StartNew();
 
-            MultiArcLoader sal = new MultiArcLoader(new string[] { //@"C:\KISS\CM3D2\GameData",
+            MultiArcLoader sal = new MultiArcLoader(null, null, null, new string[] { //@"C:\KISS\CM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData_20",
                                                                    //@"C:\KISS\COM3D2\Mod\[Warps]"
@@ -135,7 +135,7 @@ namespace CM3D2.MultiArc.Example
 
         static void ScriptPattern()
         {
-            MultiArcLoader sal = new MultiArcLoader(new string[] { //@"C:\KISS\CM3D2\GameData",
+            MultiArcLoader sal = new MultiArcLoader(null, null, null, new string[] { //@"C:\KISS\CM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData_20",
                                                                    //@"C:\KISS\COM3D2\Mod\[Warps]"
@@ -214,7 +214,7 @@ namespace CM3D2.MultiArc.Example
             Stopwatch stopwatch;
             stopwatch = Stopwatch.StartNew();
             Console.WriteLine("START: Building Arcs...");
-            MultiArcLoader sal = new MultiArcLoader(new string[] { //@"C:\KISS\CM3D2\GameData",
+            MultiArcLoader sal = new MultiArcLoader(null, null, null, new string[] { //@"C:\KISS\CM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData_20",
                                                                    //@"C:\KISS\COM3D2\Mod\[Warps]"
@@ -377,7 +377,7 @@ namespace CM3D2.MultiArc.Example
             Stopwatch stopwatch;
             stopwatch = Stopwatch.StartNew();
             Console.WriteLine("START: Building Arcs...");
-            MultiArcLoader sal = new MultiArcLoader(new string[] { //@"C:\KISS\CM3D2\GameData",
+            MultiArcLoader sal = new MultiArcLoader(null, null, null, new string[] { //@"C:\KISS\CM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData_20",
                                                                    //@"C:\KISS\COM3D2\Mod\[Warps]"
@@ -446,7 +446,7 @@ namespace CM3D2.MultiArc.Example
             Stopwatch stopwatch;
             stopwatch = Stopwatch.StartNew();
             Console.WriteLine("START: Building Arcs...");
-            MultiArcLoader sal = new MultiArcLoader(new string[] { @"C:\KISS\CM3D2\GameData",
+            MultiArcLoader sal = new MultiArcLoader(null, null, null, new string[] { @"C:\KISS\CM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData_20",
                                                                    //@"C:\KISS\COM3D2\Mod\[Warps]"
@@ -501,7 +501,7 @@ namespace CM3D2.MultiArc.Example
             Stopwatch stopwatch;
             stopwatch = Stopwatch.StartNew();
             Console.WriteLine("START: Building Arcs...");
-            MultiArcLoader mal = new MultiArcLoader(new string[] { @"C:\KISS\CM3D2\GameData",
+            MultiArcLoader mal = new MultiArcLoader(null, null, null, new string[] { @"C:\KISS\CM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData",
                                                                    @"C:\KISS\COM3D2\GameData_20",
                                                                    //@"C:\KISS\COM3D2\Mod\[Warps]"
@@ -774,42 +774,50 @@ namespace CM3D2.MultiArc.Example
         {
             Stopwatch stopwatch;
 
+            string[] dirs1 = new string[] { @"C:\KISS\CM3D2\GameData" };
+            string[] dirs2 = new string[] { @"C:\KISS\COM3D2\GameData_20" };
+            string[] dirs3 = new string[] { @"C:\KISS\COM3D2\GameData", };
+            string[] dirs4 = new string[] { @"C:\KISS\COM3D2\Mod" };
+
             //Load ARCs
             Console.WriteLine("START: Building Arcs build Cache...");
             stopwatch = Stopwatch.StartNew();
+            using (MultiArcLoader mal = new MultiArcLoader(dirs1, dirs2, dirs3, dirs4, 3, MultiArcLoader.LoadMethod.Single, true, @"C:\Users\MC\source\repos\CM3D2.Toolkit\CM3D2.Toolkit\cachetest.json", false, MultiArcLoader.Exclude.None, new ConsoleLogger()))
+            {
+                mal.LoadArcs();
+                stopwatch.Stop();
+                Console.WriteLine("DONE: Building Arcs build Cache..." + stopwatch.Elapsed.ToString());
 
-            string[] dirs = new string[] { @"C:\KISS\CM3D2\GameData", @"C:\KISS\COM3D2\GameData", @"C:\KISS\COM3D2\GameData_20", @"C:\KISS\COM3D2\Mod" };
-            MultiArcLoader mal = new MultiArcLoader(dirs, 3, MultiArcLoader.LoadMethod.Single, true, @"C:\Users\MC\source\repos\CM3D2.Toolkit\CM3D2.Toolkit\cachetest.json", false, MultiArcLoader.Exclude.None, new ConsoleLogger());
-            mal.LoadArcs();
-            stopwatch.Stop();
-            Console.WriteLine("DONE: Building Arcs build Cache..." + stopwatch.Elapsed.ToString());
-
-            Console.WriteLine("START: Building Arcs from Cache...");
-            stopwatch = Stopwatch.StartNew();
-            mal.LoadArcs();
-            stopwatch.Stop();
-            Console.WriteLine("DONE: Building Arcs from Cache..." + stopwatch.Elapsed.ToString());
-
+                Console.WriteLine("START: Building Arcs from Cache...");
+                stopwatch = Stopwatch.StartNew();
+                mal.LoadArcs();
+                stopwatch.Stop();
+                Console.WriteLine("DONE: Building Arcs from Cache..." + stopwatch.Elapsed.ToString());
+            }
+                
             Console.WriteLine("START: Building Arcs don't build Cache...");
             stopwatch = Stopwatch.StartNew();
-            mal = new MultiArcLoader(dirs, 3, MultiArcLoader.LoadMethod.Single, false, null, false, MultiArcLoader.Exclude.None);
-            mal.LoadArcs();
-            stopwatch.Stop();
-            Console.WriteLine("DONE: Building Arcs don't build Cache..." + stopwatch.Elapsed.ToString());
+            using (MultiArcLoader mal = new MultiArcLoader(dirs1, dirs2, dirs3, dirs4, 3, MultiArcLoader.LoadMethod.Single, false, null, false, MultiArcLoader.Exclude.None, new ConsoleLogger()))
+            {
+                mal.LoadArcs();
+                stopwatch.Stop();
+                Console.WriteLine("DONE: Building Arcs don't build Cache..." + stopwatch.Elapsed.ToString());
 
-            //string neifile = "casinoshop_data.nei";
-            //List<List<string>> csv = NeiLib.NeiConverter.ToCSVList(mal.arc.Files[neifile].Pointer.Data);
+                //string neifile = "casinoshop_data.nei";
+                //List<List<string>> csv = NeiLib.NeiConverter.ToCSVList(mal.arc.Files[neifile].Pointer.Data);
 
-            //Build HashSet
-            Console.WriteLine("START: Building HashSet...");
-            stopwatch = Stopwatch.StartNew();
-            HashSet<string> fileNames = new HashSet<string>(mal.arc.Files.Keys);
-            stopwatch.Stop();
-            Console.WriteLine("DONE: Building HashSet..." + stopwatch.Elapsed.ToString());
+                //Build HashSet
+                Console.WriteLine("START: Building HashSet...");
+                stopwatch = Stopwatch.StartNew();
+                HashSet<string> fileNames = new HashSet<string>(mal.arc.Files.Keys);
+                stopwatch.Stop();
+                Console.WriteLine("DONE: Building HashSet..." + stopwatch.Elapsed.ToString());
 
-            Console.WriteLine("HashSet: " + fileNames.Count);
 
-            Console.WriteLine(fileNames.Contains("maid_status_yotogiclass_list.nei"));
+                Console.WriteLine("HashSet: " + fileNames.Count);
+
+                Console.WriteLine(fileNames.Contains("maid_status_yotogiclass_list.nei"));
+            }
             Console.ReadLine();
         }
     }
@@ -1033,18 +1041,14 @@ namespace CM3D2.MultiArc.Example
         /// <inheritdoc />
         public void Debug(string message, params object[] args)
         {
-            if (!false)
-                return;
-            var msg = string.Format(message, args);
-            using (new ConsoleColorSwitch(ConsoleColor.Cyan, ConsoleColor.Black))
-                Console.WriteLine($"[{Name}] [DEBUG] {GetTimeStamp()} - {msg}");
+            //var msg = string.Format(message, args);
+            //using (new ConsoleColorSwitch(ConsoleColor.Cyan, ConsoleColor.Black))
+            //    Console.WriteLine($"[{Name}] [DEBUG] {GetTimeStamp()} - {msg}");
         }
 
         /// <inheritdoc />
         public void Error(string message, params object[] args)
         {
-            if (!true)
-                return;
             var msg = string.Format(message, args);
             using (new ConsoleColorSwitch(ConsoleColor.DarkRed, ConsoleColor.Black))
                 Console.WriteLine($"[{Name}] [ERROR] {GetTimeStamp()} - {msg}");
@@ -1061,18 +1065,14 @@ namespace CM3D2.MultiArc.Example
         /// <inheritdoc />
         public void Trace(string message, params object[] args)
         {
-            if (!false)
-                return;
-            var msg = string.Format(message, args);
-            using (new ConsoleColorSwitch(ConsoleColor.DarkGray, ConsoleColor.Black))
-                Console.WriteLine($"[{Name}] [TRACE] {GetTimeStamp()} - {msg}");
+            //var msg = string.Format(message, args);
+            //using (new ConsoleColorSwitch(ConsoleColor.DarkGray, ConsoleColor.Black))
+            //    Console.WriteLine($"[{Name}] [TRACE] {GetTimeStamp()} - {msg}");
         }
 
         /// <inheritdoc />
         public void Warn(string message, params object[] args)
         {
-            if (!true)
-                return;
             var msg = string.Format(message, args);
             using (new ConsoleColorSwitch(ConsoleColor.Yellow, ConsoleColor.Black))
                 Console.WriteLine($"[{Name}] [WARN ] {GetTimeStamp()} - {msg}");
@@ -1081,11 +1081,30 @@ namespace CM3D2.MultiArc.Example
         /// <inheritdoc />
         public void Fatal(string message, params object[] args)
         {
-            if (!true)
-                return;
             var msg = string.Format(message, args);
             using (new ConsoleColorSwitch(ConsoleColor.White, ConsoleColor.Red))
                 Console.WriteLine($"[{Name}] [FATAL] {GetTimeStamp()} - {msg}");
+        }
+
+        public void GuestLevel1(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel2(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel3(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel4(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel5(string message, params object[] args)
+        {
+            return;
         }
 
         private class ConsoleColorSwitch : IDisposable

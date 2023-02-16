@@ -35,6 +35,13 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
             0x10, 0x00, 0x00, 0x00, // 16
         };
 
+        private static readonly byte[] WarpHeader =
+        {
+            0x77, 0x61, 0x72, 0x70
+        };
+
+        private static char[] PathSeparatorArray = { Path.DirectorySeparatorChar };
+
         internal static DataHasher Hasher = DataHasher.GetBaseHasher();
 
         private Dictionary<ulong, long> CalculateHashTableOffsets(Dictionary<ulong, ulong> uuidToHash)
@@ -102,7 +109,17 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
             using (var fs = File.OpenRead(arcFile))
             using (var br = new BinaryReader(fs))
             {
-                var head = br.ReadBytes(20); // Arc Header
+                var head4 = br.ReadBytes(4);
+                if(head4.SequenceEqual(WarpHeader))
+                {
+                    Logger.Error("WARP File please decrypt after all arcs loaded: '{0}'", arcFile);
+                    return false;
+                }
+
+                byte[] head = new byte[20];
+                var head16 = br.ReadBytes(16); // Arc Header
+                Array.Copy(head4, head, 4);
+                Array.Copy(head16, 0, head, 4, 16);
                 if (!head.SequenceEqual(ArcHeader))
                 {
                     Logger.Error("Invalid File Format: '{0}' into '{1}'", arcFile, target);
@@ -298,7 +315,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
             }
 
             var name = Path.GetFileName(path);
-            var entry = GetOrCreateFile_Internal(name, target, true);
+            var entry = CreateFile(name, target);
 
             entry.Pointer = new WindowsFilePointer(path);
 
@@ -325,7 +342,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
                 {
                     addCount++;
                     var name = nameLut[fileEntry.Hash];
-                    var file = GetOrCreateFile_Internal(name, parent, true);
+                    var file = CreateFile(name, parent);
                     file.Pointer = new ArcFilePointer(arcFile, fileEntry.Offset + baseOffset);
                     Logger.Trace("Adding File '{0}/{1}' - '{2}'", addCount, fileSum, name);
                 }
@@ -793,44 +810,61 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         private bool Delete_Internal(ArcDirectoryEntry entry, bool recursive)
         {
             Logger.Debug("Deleting Directory '{0}' Recursively: '{1}'", entry, recursive);
+            Logger.GuestLevel5("Deleting Directory '{0}' Recursively: '{1}'", entry.FullName, recursive);
 
             if (!HasEntry(entry))
             {
                 Logger.Error("Cross FileSystem Operation not Supported");
+                Logger.GuestLevel1("Delete_Internal Cross FileSystem Operation not Supported {0} Recursively? {1}", entry.FullName, recursive);
                 return false;
             }
 
             if (entry == Root)
             {
                 Logger.Error("Cannot delete Root Directory");
+                Logger.GuestLevel1("Delete_Internal Cannot delete Root Directory {0}", entry.FullName);
                 return false;
             }
 
             // Delete Folder if Empty or Recursive
             if (recursive)
             {
-
                 // Delete each directory
+                Logger.GuestLevel4("Delete_Internal Delete Recursive Directories {");
                 foreach (var dir in entry.Directories.Values.ToList())
+                {
                     Delete_Internal(dir, true);
+                }
+                Logger.GuestLevel4("Delete_Internal Delete Recursive Directories }");
+
                 // Delete each file
+                Logger.GuestLevel4("Delete_Internal Delete Recursive File {");
                 foreach (var file in entry.Files.Values.ToList())
+                {
                     Delete_Internal(file);
+                }
+                Logger.GuestLevel4("Delete_Internal Delete Recursive File }");
             }
             else
             {
+                Logger.GuestLevel4("Delete_Internal Checking Empty");
+
                 // If not empty stop
                 if (entry.DirectoryCount + entry.FileCount > 0)
                 {
                     Logger.Error("Directory not Empty");
+                    Logger.GuestLevel1("Delete_Internal Directory not Empty {0}", entry.FullName);
                     return false;
                 }
             }
+
             // If Empty or Recursive deleted, remove self
             var parent = (ArcDirectoryEntry) entry.Parent;
             parent.RemoveEntry(entry);
             _directories.Remove(entry);
             entry.Invalidate();
+
+            Logger.GuestLevel4("Delete_Internal Deleted");
             return true;
         }
 
@@ -841,23 +875,20 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
                              : "Fetching Directory '{0}' into '{1}'",
                 name,
                 parent);
+            Logger.GuestLevel5(create
+                             ? "Creating Directory '{0}' into '{1}'"
+                             : "Fetching Directory '{0}' into '{1}'",
+                name,
+                parent);
 
-            var segments =
-                name.Split(Path.DirectorySeparatorChar)
-                    .Where(s => !String.IsNullOrEmpty(s))
-                    .ToList();
+            List<string> segments = name.Split(PathSeparatorArray, StringSplitOptions.RemoveEmptyEntries).ToList();
 
             name = segments.Last();
-
-            var dummyDir = new ArcDirectoryEntry(null)
-            {
-                Name = name
-            };
 
             // Create or Navigate All Roots
             for (var i = 0; i < segments.Count - 1; i++)
             {
-                var segName = segments[i];
+                string segName = segments[i];
                 switch (segName)
                 {
                     case "..":
@@ -866,26 +897,62 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
                     case ".":
                         continue;
                     default:
-                        var subDir = parent.Directories.ContainsKey(dummyDir.Name) ? parent.Directories[dummyDir.Name] : null; //parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
-                        if (create)
-                            parent = subDir ?? GetOrCreateDirectory_Internal(segName, parent, true);
-                        else if (subDir == null)
+                        Logger.GuestLevel5("Checking for Sub-Directory: {0}", name);
+
+                        var subDir = parent.Directories.ContainsKey(name) ? parent.Directories[name] : null; //parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
+                        if(subDir!= null)
                         {
-                            Logger.Error("Directory Not Found");
-                            return null;
+                            Logger.GuestLevel5("Found Sub-Directory: {0}", segName);
+
+                            if(create)
+                            {
+                                Logger.GuestLevel5("Switching Parent to Sub-Directory: {0}", segName);
+
+                                parent = subDir;
+                            }
                         }
+                        else
+                        {
+                            if(create)
+                            {
+                                Logger.GuestLevel5("Creating Sub-Directory: {0}", segName);
+
+                                parent = CreateDirectory(segName, parent);
+                                if(parent == null)
+                                {
+                                    Logger.GuestLevel1("GetOrCreateDirectory_Internal Sub-Directory Could Not be Created: {0}", segName);
+                                }
+                            }
+                            else
+                            {
+                                Logger.Error("Directory Not Found");
+                                Logger.GuestLevel1("GetOrCreateDirectory_Internal Sub-Directory Not Found:{0}", name);
+                                return null;
+                            }
+                        }
+                        //if (create)
+                        //    parent = subDir ?? GetOrCreateDirectory_Internal(segName, parent, true);
+                        //else if (subDir == null)
+                        //{
+                        //    Logger.Error("Directory Not Found");
+                        //    return null;
+                        //}
                         break;
                 }
             }
 
             // Return existing 
-            var existing = parent.Directories.ContainsKey(dummyDir.Name) ? parent.Directories[dummyDir.Name] : null; //parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
+            var existing = parent.Directories.ContainsKey(name) ? parent.Directories[name] : null; //parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
             if (existing != null)
+            {
+                Logger.GuestLevel5("GetOrCreateDirectory_Internal Directory Already Exists: {0}", name);
                 return existing;
+            }
 
             if (!create)
             {
                 Logger.Error("Directory not Found");
+                Logger.GuestLevel1("GetOrCreateDirectory_Internal Directory not Found:{0}", name);
                 return null;
             }
 
@@ -896,25 +963,17 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
             };
             _directories.Add(entry);
             MoveDir_Internal(entry, parent);
+
+            Logger.GuestLevel4("New Directory Created: {0}", name);
+
             return entry;
         }
 
         private ArcFileEntry GetOrCreateFile_Internal(string path, ArcDirectoryEntry parent, bool create)
         {
-            Logger.Debug(create
-                             ? "Creating File '{0}' into '{1}'"
-                             : "Fetching File '{0}' into '{1}'",
-                path,
-                parent);
-
             var slash = path.LastIndexOf(Path.DirectorySeparatorChar);
             var name = path.Substring(slash + 1);
             var dir = path.Remove(path.Length - name.Length);
-
-            var dummyFile = new ArcFileEntry(null)
-            {
-                Name = name
-            };
 
             // Create All Roots
             if (!string.IsNullOrEmpty(dir))
@@ -923,23 +982,29 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
                 if (parent == null)
                 {
                     Logger.Error("Directory not Found");
+                    Logger.GuestLevel1("GetOrCreateFile_Internal Directory not Found: {0}", dir);
                     return null;
                 }
             }
 
             // Return existing 
-            string key = (!KeepDuplicateFiles) ? dummyFile.Name.ToString() : parent.FullName + Path.DirectorySeparatorChar + dummyFile.Name;
-            var existing = parent.Files.ContainsKey(key) ? parent.Files[key] : null;//parent.Files.FirstOrDefault(e => e.UTF16Hash == dummyFile.UTF16Hash);
+            string key = (!KeepDuplicateFiles) ? name : parent.FullName + Path.DirectorySeparatorChar + name;
+            var existing = parent.Files.ContainsKey(key) ? parent.Files[key] : null; //parent.Files.FirstOrDefault(e => e.UTF16Hash == dummyFile.UTF16Hash);
             if (existing != null)
+            {
+                Logger.GuestLevel5("GetOrCreateFile_Internal File Already Exists in Parent Dir: {0}", key);
                 return existing;
+            }
 
             if (!create)
             {
                 Logger.Error("File not Found");
+                Logger.GuestLevel1("GetOrCreateFile_Internal File not Found: {0}", key);
                 return null;
             }
 
             // Return new File
+            Logger.GuestLevel4("Creating new File: {0} \n{1}", name, key);
             var entry = new ArcFileEntry(this)
             {
                 Name = name,
@@ -948,12 +1013,14 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
 
             if (_files.ContainsKey(key))
             {
+                Logger.GuestLevel5("GetOrCreateFile_Internal File Already Exists Here\nNew Full Name: {0}\nOld Full Name:{1}", parent.FullName, _files[key].Parent.FullName);
                 if (parent.FullName.CompareTo(_files[key].Parent.FullName) > 0)
                 {
                     //_files[entry.UTF16Hash] = entry;
 
                     Delete_Internal(_files[key]);
                     _files.Add(key, entry);
+                    Logger.GuestLevel5("GetOrCreateFile_Internal New File Added");
 
                     MoveFile_Internal(entry, parent);
                 }
@@ -961,8 +1028,11 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
             else
             {
                 _files.Add(key, entry);
+                Logger.GuestLevel5("GetOrCreateFile_Internal New File Added");
+
                 MoveFile_Internal(entry, parent);
             }
+            Logger.GuestLevel4("New File Created");
 
             return entry;
         }
@@ -1018,64 +1088,102 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         private bool MoveDir_Internal(ArcDirectoryEntry sourceDir, ArcDirectoryEntry targetDir)
         {
             Logger.Debug("Moving '{0}' into '{1}'", sourceDir, targetDir);
+            Logger.GuestLevel5("Moving '{0}' into '{1}'", sourceDir.FullName, targetDir.FullName);
 
             if (sourceDir.IsRoot)
             {
                 Logger.Error("Cannot Move Root Directory");
+                Logger.GuestLevel1("MoveDir_Internal Cannot Move Root Directory");
                 return false;
             }
 
             if (!sourceDir.FileSystem.HasEntry(targetDir))
             {
                 Logger.Error("Cross FileSystem Operation not Supported");
+                Logger.GuestLevel1("MoveDir_Internal Cross FileSystem Operation not Supported: {0} into {1}", sourceDir.FullName, targetDir.FullName);
                 return false;
             }
 
-            var existing = targetDir.Directories.ContainsKey(sourceDir.Name) ? targetDir.Directories[sourceDir.Name] : null; //targetDir.Directories.FirstOrDefault(entry => entry.UTF16Hash == sourceDir.UTF16Hash);
+            ArcDirectoryEntry existing = targetDir.Directories.ContainsKey(sourceDir.Name) ? targetDir.Directories[sourceDir.Name] : null; //targetDir.Directories.FirstOrDefault(entry => entry.UTF16Hash == sourceDir.UTF16Hash);
             // If Existing Directory
             if (existing != null)
             {
+                Logger.GuestLevel4("MoveDir_Internal Directory Already Exists {0}", sourceDir.Name);
+
                 // Move all Files
                 foreach (var file in sourceDir.Files.Values.ToList())
+                {
+                    Logger.GuestLevel5("Moving File: {0}", file.Name);
+
                     if (!MoveFile_Internal(file, existing))
+                    {
+                        Logger.GuestLevel1("MoveDir_Internal Moving File Failed: {0} into {1}", file.Name, existing.FullName);
                         return false;
+                    }
+                }
 
                 // Move all Subdirs
                 foreach (var dir in sourceDir.Directories.Values.ToList())
-                    if (!MoveDir_Internal(dir, existing))
-                        return false;
+                {
+                    Logger.GuestLevel5("Moving Directory: {0}", dir.FullName);
 
-                Delete_Internal(sourceDir, false);
+                    if (!MoveDir_Internal(dir, existing))
+                    {
+                        Logger.GuestLevel1("MoveDir_Internal Moving Directory Failed: {0} into {1}", dir.FullName, existing.FullName);
+                        return false;
+                    }
+                }
+
+                if(!Delete_Internal(sourceDir, false))
+                {
+                    Logger.GuestLevel1("MoveDir_Internal Delete Source Directory Failed: {0}", sourceDir.FullName);
+                }
                 return true;
             }
 
             // Set Parent 
             sourceDir.SetParent(targetDir);
+            Logger.GuestLevel5("MoveDir_Internal Changed Source Directory Parent");
+
             // Add to Children
             targetDir.AddEntry(sourceDir);
+            Logger.GuestLevel5("MoveDir_Internal Added Source Directory to Target Directory");
             return true;
         }
 
         private bool MoveFile_Internal(ArcFileEntry sourceFile, ArcDirectoryEntry targetDir)
         {
             Logger.Debug("Moving '{0}' into '{1}'", sourceFile, targetDir);
+            Logger.GuestLevel5("Moving '{0}' into '{1}'", sourceFile.FullName, targetDir);
+
             if (!sourceFile.FileSystem.HasEntry(targetDir))
             {
                 Logger.Error("Cross FileSystem Operation not Supported");
+                Logger.GuestLevel1("MoveFile_Internal Cross FileSystem Operation not Supported {0} into {1}", sourceFile.FullName, targetDir);
                 return false;
             }
 
             string key = (!KeepDuplicateFiles) ? sourceFile.Name.ToString() : targetDir.FullName + Path.DirectorySeparatorChar + sourceFile.Name;
-            var existing = (targetDir.Files.ContainsKey(key) ? targetDir.Files[key] : null);//targetDir.Files.FirstOrDefault(entry => entry.UTF16Hash == sourceFile.UTF16Hash);
+            ArcFileEntry existing = (targetDir.Files.ContainsKey(key) ? targetDir.Files[key] : null);//targetDir.Files.FirstOrDefault(entry => entry.UTF16Hash == sourceFile.UTF16Hash);
             // Delete Existing
             if (existing != null)
+            {
+                Logger.GuestLevel5("MoveFile_Internal File Found to Delete: {0}", key);
+
                 if (!Delete_Internal(existing))
+                {
+                    Logger.GuestLevel1("MoveFile_Internal Failed to Delete: {0}", key);
                     return false;
+                }
+            }
 
             // Set Parent 
             sourceFile.SetParent(targetDir);
+            Logger.GuestLevel5("MoveFile_Internal Changed File Parent");
+
             // Add to Children
             targetDir.AddEntry(sourceFile);
+            Logger.GuestLevel5("MoveFile_Internal Added Source File to Target Directory");
             return true;
         }
 

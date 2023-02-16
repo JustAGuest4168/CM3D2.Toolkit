@@ -55,6 +55,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         public ArcDirectoryEntry CreateDirectory(string name, ArcDirectoryEntry parent)
         {
             Logger.Info("Creating Directory '{0}' into '{1}'", name, parent);
+            Logger.GuestLevel4("Creating Directory '{0}' into '{1}'", name, parent);
 
             return GetOrCreateDirectory_Internal(name, parent, true);
         }
@@ -68,6 +69,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         public ArcFileEntry CreateFile(string name, ArcDirectoryEntry parent)
         {
             Logger.Info("Creating File '{0}' into '{1}'", name, parent);
+            Logger.GuestLevel4("Creating File '{0}' into '{1}'", name, parent);
 
             return GetOrCreateFile_Internal(name, parent, true);
         }
@@ -164,7 +166,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         {
             Logger.Info("Checking File '{0}' into '{1}'", name, parent);
 
-            return GetOrCreateFile_Internal(name, parent, false) != null;
+            return GetFile(name, parent) != null;
         }
 
         /// <summary>

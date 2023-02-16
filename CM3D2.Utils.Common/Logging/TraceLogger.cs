@@ -165,6 +165,27 @@ namespace CM3D2.Utils.Common.Logging
             System.Diagnostics.Debug.WriteLine($"[{Name}] [FATAL] {GetTimeStamp()} - {msg}");
         }
 
+        public void GuestLevel1(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel2(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel3(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel4(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel5(string message, params object[] args)
+        {
+            return;
+        }
+
         /// <inheritdoc />
         public string Name { get; set; }
     }

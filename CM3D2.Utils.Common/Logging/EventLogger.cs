@@ -86,6 +86,27 @@ namespace CM3D2.Utils.Common.Logging
             OnLog?.Invoke(LogLevel.Warn, Name, formatted);
         }
 
+        public void GuestLevel1(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel2(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel3(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel4(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel5(string message, params object[] args)
+        {
+            return;
+        }
+
         /// <summary>
         ///     Debug Level Log Event
         /// </summary>

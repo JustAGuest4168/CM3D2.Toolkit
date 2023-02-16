@@ -96,6 +96,27 @@ namespace CM3D2.Utils.Common.Logging
                 logger.Fatal(message, args);
         }
 
+        public void GuestLevel1(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel2(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel3(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel4(string message, params object[] args)
+        {
+            return;
+        }
+        public void GuestLevel5(string message, params object[] args)
+        {
+            return;
+        }
+
         public string Name => nameof(MultiLogger);
     }
 }

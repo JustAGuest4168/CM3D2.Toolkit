@@ -47,6 +47,12 @@ namespace CM3D2.Toolkit.Guest4168Branch.Logging
         /// <param name="args">Parameters</param>
         void Fatal(string message, params object[] args);
 
+        void GuestLevel1(string message, params object[] args);
+        void GuestLevel2(string message, params object[] args);
+        void GuestLevel3(string message, params object[] args);
+        void GuestLevel4(string message, params object[] args);
+        void GuestLevel5(string message, params object[] args);
+
         /// <summary>
         ///     Logger Name
         /// </summary>

@@ -34,6 +34,21 @@ namespace CM3D2.Toolkit.Guest4168Branch.Logging
         /// <inheritdoc />
         public void Fatal(string message, params object[] args) {}
 
+        /// <inheritdoc />
+        public void GuestLevel1(string message, params object[] args) { }
+
+        /// <inheritdoc />
+        public void GuestLevel2(string message, params object[] args) { }
+
+        /// <inheritdoc />
+        public void GuestLevel3(string message, params object[] args) { }
+
+        /// <inheritdoc />
+        public void GuestLevel4(string message, params object[] args) { }
+
+        /// <inheritdoc />
+        public void GuestLevel5(string message, params object[] args) { }
+
         public string Name => nameof(NullLogger);
     }
 }
