@@ -184,14 +184,16 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
             }
 
             //Tasks
-            Task[] tasks = new Task[threadCount];
+            //Task[] tasks = new Task[threadCount];
+            Action[] actions = new Action[threadCount];
             for (int i = 0; i < threadCount; i++)
             {
-                tasks[i] = Task.Factory.StartNew(loadArcsInTask, i.ToString());
+                //tasks[i] = Task.Factory.StartNew(loadArcsInTask, i.ToString());
+                string temp = i.ToString();
+                actions[i] = new Action(() => { loadArcsInTask(temp); });
             }
-
-            Task.WaitAll(tasks);
-
+            //Task.WaitAll(tasks);
+            Parallel.Invoke(actions);
 
             //After finishing threads, copy everything to single ARC
             arc = null; 
